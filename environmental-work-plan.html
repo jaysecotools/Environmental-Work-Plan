@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Environmental Work Plan Tool</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+
+body{
+font-family:Arial, sans-serif;
+margin:0;
+background:#eef2ef;
+color:#333;
+}
+
+header{
+background:#2f6b4f;
+color:white;
+padding:16px;
+font-size:22px;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+.section{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:8px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+h2{
+margin-top:0;
+color:#2f6b4f;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:8px;
+}
+
+th{
+background:#f2f7f3;
+}
+
+input,textarea,select{
+width:100%;
+border:none;
+padding:6px;
+font-family:inherit;
+font-size:14px;
+}
+
+textarea{
+resize:vertical;
+}
+
+button{
+background:#2f6b4f;
+color:white;
+border:none;
+padding:8px 14px;
+margin-top:10px;
+cursor:pointer;
+border-radius:4px;
+}
+
+button:hover{
+background:#244f3a;
+}
+
+.controls{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:15px;
+}
+
+#map{
+height:350px;
+margin-top:10px;
+border-radius:6px;
+}
+
+.timeline-row{
+display:grid;
+grid-template-columns:200px 1fr;
+align-items:center;
+margin:5px 0;
+}
+
+.timeline-bar{
+height:14px;
+background:#4a8f6a;
+border-radius:3px;
+}
+
+.gallery{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.gallery img{
+height:120px;
+border-radius:6px;
+}
+
+.prompt{
+background:#f7faf7;
+font-weight:bold;
+width:200px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+Environmental Project Work Plan
+</header>
+
+<div class="container">
+
+<div class="controls">
+<button onclick="saveProject()">Save Project</button>
+<button onclick="loadProject()">Load Project</button>
+<button onclick="window.print()">Export PDF</button>
+</div>
+
+
+<div class="section">
+
+<h2>Project Information</h2>
+
+<table>
+
+<tr>
+<td class="prompt">Project Name</td>
+<td><input placeholder="Example: Riparian revegetation program – South Creek"></td>
+</tr>
+
+<tr>
+<td class="prompt">Project Location</td>
+<td><input placeholder="Reserve name, coordinates, property ID etc"></td>
+</tr>
+
+<tr>
+<td class="prompt">Organisation</td>
+<td><input placeholder="Council, NRM group, landholder"></td>
+</tr>
+
+<tr>
+<td class="prompt">Project Manager</td>
+<td><input placeholder="Responsible person"></td>
+</tr>
+
+<tr>
+<td class="prompt">Start Date</td>
+<td><input type="date"></td>
+</tr>
+
+<tr>
+<td class="prompt">Completion Date</td>
+<td><input type="date"></td>
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="section">
+
+<h2>Site Map</h2>
+
+<button onclick="locateUser()">Use My Location</button>
+
+<input id="searchBox" placeholder="Search location (town, reserve, address)">
+
+<div id="map"></div>
+
+</div>
+
+
+<div class="section">
+
+<h2>Site Description</h2>
+
+<textarea rows="5" placeholder="Describe the site including vegetation type, current condition, disturbance history, soil type, waterways, access points, and surrounding land use. 
+
+Example:
+• Eucalyptus coastal woodland
+• Blackberry infestation along creekline
+• Sandy loam soils with erosion on lower slope
+• Adjacent agricultural land"></textarea>
+
+</div>
+
+
+<div class="section">
+
+<h2>Project Objectives</h2>
+
+<textarea rows="4" placeholder="Example objectives:
+
+• Reduce priority weed species
+• Restore native vegetation structure
+• Improve wildlife habitat
+• Stabilise soil and prevent erosion"></textarea>
+
+</div>
+
+
+<div class="section">
+
+<h2>Environmental Issues</h2>
+
+<table id="issuesTable">
+
+<tr>
+<th>Issue Type</th>
+<th>Description</th>
+<th>Priority</th>
+</tr>
+
+<tr>
+<td>
+<select>
+<option>Weeds</option>
+<option>Erosion</option>
+<option>Habitat loss</option>
+<option>Pest animals</option>
+<option>Hydrology</option>
+<option>Other</option>
+</select>
+</td>
+
+<td>
+<input placeholder="Example: Dense blackberry infestation along creek">
+</td>
+
+<td>
+<select>
+<option>Low</option>
+<option>Medium</option>
+<option>High</option>
+</select>
+</td>
+
+</tr>
+
+</table>
+
+<button onclick="addIssue()">Add Issue</button>
+
+</div>
+
+
+<div class="section">
+
+<h2>Work Tasks</h2>
+
+<table id="tasksTable">
+
+<tr>
+<th>Task</th>
+<th>Description</th>
+<th>Responsible</th>
+<th>Start</th>
+<th>End</th>
+</tr>
+
+<tr>
+
+<td>
+<input placeholder="Example: Weed control">
+</td>
+
+<td>
+<input placeholder="Cut-stump herbicide treatment">
+</td>
+
+<td>
+<input placeholder="Field crew / contractor">
+</td>
+
+<td>
+<input type="date">
+</td>
+
+<td>
+<input type="date">
+</td>
+
+</tr>
+
+</table>
+
+<button onclick="addTask()">Add Task</button>
+
+</div>
+
+
+<div class="section">
+
+<h2>Task Timeline</h2>
+
+<div id="timeline"></div>
+
+<button onclick="generateTimeline()">Generate Timeline</button>
+
+</div>
+
+
+<div class="section">
+
+<h2>Resources</h2>
+
+<table id="resourceTable">
+
+<tr>
+<th>Resource</th>
+<th>Quantity</th>
+<th>Notes</th>
+</tr>
+
+<tr>
+
+<td>
+<input placeholder="Example: Native tube stock">
+</td>
+
+<td>
+<input placeholder="300">
+</td>
+
+<td>
+<input placeholder="Local provenance species">
+</td>
+
+</tr>
+
+</table>
+
+<button onclick="addResource()">Add Resource</button>
+
+</div>
+
+
+<div class="section">
+
+<h2>Risk Assessment</h2>
+
+<table id="riskTable">
+
+<tr>
+<th>Hazard</th>
+<th>Risk</th>
+<th>Control Measures</th>
+</tr>
+
+<tr>
+
+<td>
+<input placeholder="Example: Uneven terrain">
+</td>
+
+<td>
+<input placeholder="Trip hazard">
+</td>
+
+<td>
+<input placeholder="Wear boots, maintain situational awareness">
+</td>
+
+</tr>
+
+</table>
+
+<button onclick="addRisk()">Add Risk</button>
+
+</div>
+
+
+<div class="section">
+
+<h2>Monitoring Photos</h2>
+
+<input type="file" multiple onchange="previewPhotos(event)">
+
+<div class="gallery" id="gallery"></div>
+
+</div>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+let map = L.map('map').setView([-42,147],6);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+maxZoom:19
+}).addTo(map);
+
+let marker;
+
+function locateUser(){
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+let lat = pos.coords.latitude;
+let lon = pos.coords.longitude;
+
+map.setView([lat,lon],13);
+
+if(marker) map.removeLayer(marker);
+
+marker = L.marker([lat,lon]).addTo(map);
+
+});
+
+}
+
+function addIssue(){
+
+let table = document.getElementById("issuesTable");
+
+let row = table.insertRow();
+
+row.innerHTML = `
+<td>
+<select>
+<option>Weeds</option>
+<option>Erosion</option>
+<option>Habitat loss</option>
+<option>Pest animals</option>
+<option>Hydrology</option>
+<option>Other</option>
+</select>
+</td>
+<td><input placeholder="Describe the issue"></td>
+<td>
+<select>
+<option>Low</option>
+<option>Medium</option>
+<option>High</option>
+</select>
+</td>
+`;
+
+}
+
+function addTask(){
+
+let table = document.getElementById("tasksTable");
+
+let row = table.insertRow();
+
+row.innerHTML = `
+<td><input placeholder="Task"></td>
+<td><input placeholder="Description"></td>
+<td><input placeholder="Responsible person"></td>
+<td><input type="date"></td>
+<td><input type="date"></td>
+`;
+
+}
+
+function addResource(){
+
+let table = document.getElementById("resourceTable");
+
+let row = table.insertRow();
+
+row.innerHTML = `
+<td><input placeholder="Resource"></td>
+<td><input placeholder="Quantity"></td>
+<td><input placeholder="Notes"></td>
+`;
+
+}
+
+function addRisk(){
+
+let table = document.getElementById("riskTable");
+
+let row = table.insertRow();
+
+row.innerHTML = `
+<td><input placeholder="Hazard"></td>
+<td><input placeholder="Risk"></td>
+<td><input placeholder="Control measures"></td>
+`;
+
+}
+
+function previewPhotos(event){
+
+let gallery = document.getElementById("gallery");
+
+for(let file of event.target.files){
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+let img = document.createElement("img");
+
+img.src = e.target.result;
+
+gallery.appendChild(img);
+
+};
+
+reader.readAsDataURL(file);
+
+}
+
+}
+
+function generateTimeline(){
+
+let container = document.getElementById("timeline");
+
+container.innerHTML="";
+
+let table = document.getElementById("tasksTable");
+
+for(let i=1;i<table.rows.length;i++){
+
+let task = table.rows[i].cells[0].querySelector("input").value;
+
+let start = table.rows[i].cells[3].querySelector("input").value;
+
+let end = table.rows[i].cells[4].querySelector("input").value;
+
+if(start && end){
+
+let s = new Date(start);
+let e = new Date(end);
+
+let duration = (e-s)/(1000*3600*24);
+
+let row = document.createElement("div");
+
+row.className="timeline-row";
+
+let label = document.createElement("div");
+
+label.innerText = task;
+
+let bar = document.createElement("div");
+
+bar.className="timeline-bar";
+
+bar.style.width = (duration*10)+"px";
+
+row.appendChild(label);
+row.appendChild(bar);
+
+container.appendChild(row);
+
+}
+
+}
+
+}
+
+function saveProject(){
+
+localStorage.setItem("ecoWorkPlan",document.body.innerHTML);
+
+alert("Project saved locally");
+
+}
+
+function loadProject(){
+
+let data = localStorage.getItem("ecoWorkPlan");
+
+if(data){
+
+document.body.innerHTML=data;
+
+alert("Project loaded");
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
